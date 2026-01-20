@@ -8,11 +8,21 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="/">Audit App</a>
-        <div class="navbar-nav">
+        <a class="navbar-brand" href="/">Audit System</a>
+        <div class="navbar-nav me-auto">
             <a class="nav-link" href="/">Audit Logs</a>
-            <a class="nav-link active" href="/departments">Departments</a>
+            <a class="nav-link" href="/departments">Departments</a>
             <a class="nav-link" href="/employees">Employees</a>
+        </div>
+        
+        <div class="d-flex text-white align-items-center gap-3">
+            <div>
+                <i class="bi bi-person-circle"></i>
+                <span th:text="${#authentication.name}">User</span>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-sm btn-outline-light">Logout</button>
+            </form>
         </div>
     </div>
 </nav>
@@ -21,14 +31,17 @@
     <div class="row">
         <div class="col-md-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">Add Department</div>
+                <div class="card-header bg-primary text-white">Manage Department</div>
                 <div class="card-body">
                     <form th:action="@{/departments/save}" th:object="${newDepartment}" method="post">
+                        
+                        <input type="hidden" th:field="*{recordId}"/>
+
                         <div class="mb-3">
-                            <label>Name</label>
-                            <input type="text" th:field="*{name}" class="form-control" required>
+                            <label>Department Name</label>
+                            <input type="text" th:field="*{name}" class="form-control" placeholder="e.g., IT, HR" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Create</button>
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
             </div>
@@ -38,13 +51,19 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h4 class="card-title">All Departments</h4>
-                    <table class="table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Employees Count</th></tr></thead>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>UUID</th>
+                            <th>Name</th>
+                            <th>Emp Count</th>
+                        </tr>
+                        </thead>
                         <tbody>
                         <tr th:each="dept : ${departments}">
-                            <td th:text="${dept.id}"></td>
-                            <td th:text="${dept.name}"></td>
-                            <td th:text="${dept.employees.size()}"></td>
+                            <td><small th:text="${dept.recordId}" class="text-muted" style="font-family: monospace;"></small></td>
+                            <td th:text="${dept.name}" class="fw-bold"></td>
+                            <td><span class="badge bg-info text-dark" th:text="${dept.employees.size()}"></span></td>
                         </tr>
                         </tbody>
                     </table>

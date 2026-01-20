@@ -1,4 +1,4 @@
-package com.audit.audit_poc;
+package com.audit.audit_poc.audit;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

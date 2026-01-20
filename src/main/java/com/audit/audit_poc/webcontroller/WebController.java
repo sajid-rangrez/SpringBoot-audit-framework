@@ -1,4 +1,6 @@
 package com.audit.audit_poc.webcontroller;
+import java.util.UUID;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,80 +10,87 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.audit.audit_poc.AuditLogRepository;
+import com.audit.audit_poc.audit.AuditLogDao;
+import com.audit.audit_poc.bussiness.DepartmentBusiness;
+import com.audit.audit_poc.bussiness.EmployeeBusiness;
 import com.audit.audit_poc.entity.Department;
 import com.audit.audit_poc.entity.Employee;
-import com.audit.audit_poc.repository.DepartmentRepository;
-import com.audit.audit_poc.repository.EmployeeRepository;
 
-@Controller // Note: @Controller, NOT @RestController
+@Controller
 public class WebController {
 
-    private final DepartmentRepository departmentRepository;
-    private final EmployeeRepository employeeRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final DepartmentBusiness departmentBusiness;
+    private final EmployeeBusiness employeeBusiness;
+    private final AuditLogDao auditLogDao;
 
-    public WebController(DepartmentRepository departmentRepository, 
-                         EmployeeRepository employeeRepository, 
-                         AuditLogRepository auditLogRepository) {
-        this.departmentRepository = departmentRepository;
-        this.employeeRepository = employeeRepository;
-        this.auditLogRepository = auditLogRepository;
+    public WebController(DepartmentBusiness departmentBusiness, EmployeeBusiness employeeBusiness, AuditLogDao auditLogDao) {
+        this.departmentBusiness = departmentBusiness;
+        this.employeeBusiness = employeeBusiness;
+        this.auditLogDao = auditLogDao;
     }
 
-    // --- HOME / AUDIT LOGS ---
     @GetMapping("/")
     public String viewAuditLogs(Model model) {
-        // Fetch logs sorted by latest first
-        model.addAttribute("logs", auditLogRepository.findAll(Sort.by(Sort.Direction.DESC, "timestamp")));
+        model.addAttribute("logs", auditLogDao.findAll(Sort.by(Sort.Direction.DESC, "createdDate")));
         return "audit-logs";
     }
 
-    // --- DEPARTMENTS ---
     @GetMapping("/departments")
     public String viewDepartments(Model model) {
-        model.addAttribute("departments", departmentRepository.findAll());
+        model.addAttribute("departments", departmentBusiness.findAll());
         model.addAttribute("newDepartment", new Department());
         return "departments";
     }
 
     @PostMapping("/departments/save")
     public String saveDepartment(@ModelAttribute Department department) {
-        departmentRepository.save(department);
+        // 1. HERE: department.recordId is NULL
+        
+        Department savedDept = departmentBusiness.save(department);
+        
+        // 2. HERE: savedDept.recordId will have a UUID (e.g., "550e8400-e29b...")
+        System.out.println("Generated ID: " + savedDept.getRecordId());
+        
         return "redirect:/departments";
     }
 
-    // --- EMPLOYEES ---
     @GetMapping("/employees")
     public String viewEmployees(Model model) {
-        model.addAttribute("employees", employeeRepository.findAll());
-        model.addAttribute("departments", departmentRepository.findAll()); // For the dropdown
+        model.addAttribute("employees", employeeBusiness.findAll());
+        model.addAttribute("departments", departmentBusiness.findAll());
         model.addAttribute("newEmployee", new Employee());
         return "employees";
     }
 
     @PostMapping("/employees/save")
     public String saveEmployee(@ModelAttribute Employee employee) {
-        employeeRepository.save(employee);
+        employeeBusiness.save(employee);
         return "redirect:/employees";
+    }
+ // Inside FrameworkWebController.java
+
+    @GetMapping("/employees/edit/{id}")
+    public String editEmployee(@PathVariable UUID id, Model model) {
+        // 1. Fetch the employee to edit
+        Employee employeeToEdit = employeeBusiness.findById(id);
+
+        // 2. Put it in the model as "newEmployee" so the form populates with its data
+        model.addAttribute("newEmployee", employeeToEdit);
+
+        // 3. Reload the rest of the page data (List of all employees & departments)
+        model.addAttribute("employees", employeeBusiness.findAll());
+        model.addAttribute("departments", departmentBusiness.findAll());
+        
+        return "employees"; // Return the same view
     }
 
-    // --- MOVE EMPLOYEE (CHANGE DEPT) ---
+    // Note: RequestParam is now UUID
     @PostMapping("/employees/move")
-    public String moveEmployee(@RequestParam Long employeeId, @RequestParam Long departmentId) {
-        Employee emp = employeeRepository.findById(employeeId).orElseThrow();
-        Department dept = departmentRepository.findById(departmentId).orElseThrow();
-        
-        emp.setDepartment(dept); // This triggers the Audit Update
-        employeeRepository.save(emp);
-        
-        return "redirect:/employees";
-    }
-    
-    // --- DELETE EMPLOYEE ---
-    @GetMapping("/employees/delete/{id}")
-    public String deleteEmployee(@PathVariable Long id) {
-        employeeRepository.deleteById(id);
+    public String moveEmployee(@RequestParam UUID employeeId, @RequestParam UUID departmentId) {
+        Employee emp = employeeBusiness.findById(employeeId);
+        Department dept = departmentBusiness.findById(departmentId);
+        emp.setDepartment(dept);
+        employeeBusiness.save(emp);
         return "redirect:/employees";
     }
 }

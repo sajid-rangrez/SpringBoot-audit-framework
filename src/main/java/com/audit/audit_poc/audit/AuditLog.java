@@ -1,18 +1,20 @@
-package com.audit.audit_poc;
-import jakarta.persistence.*;
+package com.audit.audit_poc.audit;
+
+import com.audit.audit_poc.entity.AbsEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.Data;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-public class AuditLog {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+@EqualsAndHashCode(callSuper = true)
+public class AuditLog extends AbsEntity {
+    
     private String entityName;
-    private Long entityId;
-    private String action; // INSERT, UPDATE, DELETE
+    private String entityId; // Changed from Long to String for UUID support
+    private String action;
     private String fieldName;
 
     @Column(length = 1000)
@@ -20,63 +22,82 @@ public class AuditLog {
 
     @Column(length = 1000)
     private String newValue;
-
-    private LocalDateTime timestamp;
+    
     private String modifiedBy;
-	public Long getId() {
-		return id;
+    private String sessionId;  // HTTP Session ID
+    private String companyId;  // The user's company
+    
+
+	public String getSessionId() {
+		return sessionId;
 	}
-	public void setId(Long id) {
-		this.id = id;
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
 	public String getEntityName() {
 		return entityName;
 	}
+
 	public void setEntityName(String entityName) {
 		this.entityName = entityName;
 	}
-	public Long getEntityId() {
+
+	public String getEntityId() {
 		return entityId;
 	}
-	public void setEntityId(Long entityId) {
+
+	public void setEntityId(String entityId) {
 		this.entityId = entityId;
 	}
+
 	public String getAction() {
 		return action;
 	}
+
 	public void setAction(String action) {
 		this.action = action;
 	}
+
 	public String getFieldName() {
 		return fieldName;
 	}
+
 	public void setFieldName(String fieldName) {
 		this.fieldName = fieldName;
 	}
+
 	public String getOldValue() {
 		return oldValue;
 	}
+
 	public void setOldValue(String oldValue) {
 		this.oldValue = oldValue;
 	}
+
 	public String getNewValue() {
 		return newValue;
 	}
+
 	public void setNewValue(String newValue) {
 		this.newValue = newValue;
 	}
-	public LocalDateTime getTimestamp() {
-		return timestamp;
-	}
-	public void setTimestamp(LocalDateTime timestamp) {
-		this.timestamp = timestamp;
-	}
+
 	public String getModifiedBy() {
 		return modifiedBy;
 	}
+
 	public void setModifiedBy(String modifiedBy) {
 		this.modifiedBy = modifiedBy;
 	}
-    
     
 }
