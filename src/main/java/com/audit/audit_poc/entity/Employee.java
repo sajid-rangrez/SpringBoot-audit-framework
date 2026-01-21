@@ -1,5 +1,7 @@
 package com.audit.audit_poc.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -17,7 +19,9 @@ public class Employee extends AbsEntity {
     private String role;
 
     @ManyToOne
+    @ToString.Exclude
     @JoinColumn(name = "department_id")
+    @JsonIgnoreProperties("employees")
     private Department department;
 
 	public String getName() {

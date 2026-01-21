@@ -2,6 +2,8 @@ package com.audit.audit_poc.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -18,6 +20,7 @@ public class Department extends AbsEntity {
     private String name;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("department")
     @ToString.Exclude
     private List<Employee> employees = new ArrayList<>();
 

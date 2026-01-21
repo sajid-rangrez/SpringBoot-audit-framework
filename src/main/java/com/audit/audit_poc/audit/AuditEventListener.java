@@ -150,16 +150,34 @@ public class AuditEventListener implements PostUpdateEventListener, PostInsertEv
         if (value != null && value.length() > length) return value.substring(0, length - 3) + "...";
         return value;
     }
-
-    private String formatValue(Object value) {
-        if (value == null) return "null";
-        if (value instanceof java.util.Collection) return "[Ignored Collection]";
-        if (value instanceof AbsEntity) return "Entity: " + value.getClass().getSimpleName() + " [ID: " + ((AbsEntity) value).getRecordId() + "]";
-        return value.toString();
+ // 1. Safe Comparison (Avoids calling .equals() on Lists)
+    private boolean isChanged(Object oldVal, Object newVal) {
+        // If it's a collection, assume NO change for auditing purposes to prevent crash
+        if (oldVal instanceof java.util.Collection || newVal instanceof java.util.Collection) {
+            return false; 
+        }
+        return (oldVal == null && newVal != null) || (oldVal != null && !oldVal.equals(newVal));
     }
 
-    private boolean isChanged(Object oldVal, Object newVal) {
-        return (oldVal == null && newVal != null) || (oldVal != null && !oldVal.equals(newVal));
+    // 2. Safe Formatting (Prevents calling .toString() on Entities/Lists)
+    private String formatValue(Object value) {
+        if (value == null) return "null";
+        
+        // Block Collections explicitly
+        if (value instanceof java.util.Collection) return "[Collection - Ignored]";
+
+        // Block Entities (Just log the ID)
+        if (value instanceof AbsEntity) {
+            try {
+                // Return ONLY the ID, do not trigger the Entity's toString()
+                return "Ref: " + value.getClass().getSimpleName() + ":" + ((AbsEntity) value).getRecordId();
+            } catch (Exception e) {
+                return "Ref: Unknown";
+            }
+        }
+        
+        // For everything else (Strings, Numbers), toString is safe
+        return value.toString();
     }
 
     @Override
