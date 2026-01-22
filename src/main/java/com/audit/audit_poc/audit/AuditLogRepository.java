@@ -1,7 +1,6 @@
 package com.audit.audit_poc.audit;
 
-import com.audit.audit_poc.repository.AbsDao;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AuditLogRepository extends AbsDao<AuditLog> {
-   ;
+public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 }

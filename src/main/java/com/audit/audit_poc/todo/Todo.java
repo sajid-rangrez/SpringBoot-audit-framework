@@ -1,21 +1,19 @@
 package com.audit.audit_poc.todo;
 
-import com.audit.audit_poc.entity.AbsEntity;
+import com.audit.audit_poc.abs.AbsEntity;
 
 import jakarta.persistence.Entity;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity
-@Getter
-@Setter
-@ToString(callSuper = true)
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class Todo extends AbsEntity {
-    
     private String task;
-    private boolean completed = false; // Default to not completed
-    private String priority; // LOW, MEDIUM, HIGH
+    private boolean completed;
+
+    
 	public String getTask() {
 		return task;
 	}
@@ -27,12 +25,6 @@ public class Todo extends AbsEntity {
 	}
 	public void setCompleted(boolean completed) {
 		this.completed = completed;
-	}
-	public String getPriority() {
-		return priority;
-	}
-	public void setPriority(String priority) {
-		this.priority = priority;
 	}
     
 }

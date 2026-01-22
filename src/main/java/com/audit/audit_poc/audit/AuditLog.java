@@ -1,103 +1,37 @@
 package com.audit.audit_poc.audit;
 
-import com.audit.audit_poc.entity.AbsEntity;
+import java.time.LocalDateTime;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class AuditLog extends AbsEntity {
-    
-    private String entityName;
-    private String entityId; // Changed from Long to String for UUID support
-    private String action;
-    private String fieldName;
+@Table(name = "audit_log")
+@Setter
+@Getter
+public class AuditLog {
 
-    @Column(length = 1000)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String tableName;
+    private String columnName;
+
+    @Column(columnDefinition = "TEXT")
     private String oldValue;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String newValue;
-    
-    private String modifiedBy;
-    private String sessionId;  // HTTP Session ID
-    private String companyId;  // The user's company
-    
 
-	public String getSessionId() {
-		return sessionId;
-	}
+    private String userChanged;
 
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
-	}
-
-	public String getCompanyId() {
-		return companyId;
-	}
-
-	public void setCompanyId(String companyId) {
-		this.companyId = companyId;
-	}
-
-	public String getEntityName() {
-		return entityName;
-	}
-
-	public void setEntityName(String entityName) {
-		this.entityName = entityName;
-	}
-
-	public String getEntityId() {
-		return entityId;
-	}
-
-	public void setEntityId(String entityId) {
-		this.entityId = entityId;
-	}
-
-	public String getAction() {
-		return action;
-	}
-
-	public void setAction(String action) {
-		this.action = action;
-	}
-
-	public String getFieldName() {
-		return fieldName;
-	}
-
-	public void setFieldName(String fieldName) {
-		this.fieldName = fieldName;
-	}
-
-	public String getOldValue() {
-		return oldValue;
-	}
-
-	public void setOldValue(String oldValue) {
-		this.oldValue = oldValue;
-	}
-
-	public String getNewValue() {
-		return newValue;
-	}
-
-	public void setNewValue(String newValue) {
-		this.newValue = newValue;
-	}
-
-	public String getModifiedBy() {
-		return modifiedBy;
-	}
-
-	public void setModifiedBy(String modifiedBy) {
-		this.modifiedBy = modifiedBy;
-	}
-    
+    private LocalDateTime changedAt = LocalDateTime.now();
 }

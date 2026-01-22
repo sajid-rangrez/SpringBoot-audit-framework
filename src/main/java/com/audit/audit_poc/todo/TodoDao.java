@@ -2,7 +2,7 @@ package com.audit.audit_poc.todo;
 
 import org.springframework.stereotype.Repository;
 
-import com.audit.audit_poc.repository.AbsDao;
+import com.audit.audit_poc.abs.AbsDao;
 
 @Repository
 public interface TodoDao extends AbsDao<Todo> {
