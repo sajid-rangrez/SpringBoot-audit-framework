@@ -46,9 +46,11 @@ public class AuditHibernateListener implements PreInsertEventListener, PreUpdate
 
     private void audit(Object entity, EntityPersister persister, Object[] newState, Object[] oldState, String action) {
         if (!(entity instanceof AbsEntity)) return;
-        if (entity instanceof AuditLog || entity instanceof AuditLogDetail) return;
+        if (entity instanceof AuditLog || entity instanceof AuditFields) return;
 
-        AbsEntity absEntity = (AbsEntity) entity;
+//        AbsEntity absEntity = (AbsEntity) entity;
+        
+        String sessionId = "DemoId7161";
         
         // --- CHANGE 1: Get Real DB Table Name ---
         String tableName;
@@ -61,8 +63,8 @@ public class AuditHibernateListener implements PreInsertEventListener, PreUpdate
         }
 
         AuditLog log = new AuditLog();
-        log.setEntityName(tableName); // Storing Table Name instead of Class Name
-        log.setEntityId(absEntity.getRecordId() != null ? absEntity.getRecordId().toString() : "PENDING");
+        log.setSessionId(sessionId);
+//        log.setEntityId(absEntity.getRecordId() != null ? absEntity.getRecordId().toString() : "PENDING");
         log.setAction(action);
         log.setTimestamp(LocalDateTime.now());
 
@@ -97,20 +99,20 @@ public class AuditHibernateListener implements PreInsertEventListener, PreUpdate
 
             if ("UPDATE".equals(action)) {
                 if (isChanged(oldVal, newVal)) {
-                    log.addDetail(dbColumnName, format(oldVal), format(newVal));
+                    log.addDetail(tableName,dbColumnName, format(oldVal), format(newVal), sessionId);
                 }
             } else if ("INSERT".equals(action)) {
                 if (newVal != null) {
-                    log.addDetail(dbColumnName, "null", format(newVal));
+                    log.addDetail(tableName, dbColumnName, "", format(newVal), sessionId);
                 }
             } else if ("DELETE".equals(action)) {
                 if (oldVal != null) {
-                    log.addDetail(dbColumnName, format(oldVal), "null");
+                    log.addDetail(tableName, dbColumnName, format(oldVal), "", sessionId);
                 }
             }
         }
 
-        if (!log.getDetails().isEmpty() || !"UPDATE".equals(action)) {
+        if (!log.getAuditFields().isEmpty() || !"UPDATE".equals(action)) {
             auditService.saveAuditLog(log);
         }
     }
